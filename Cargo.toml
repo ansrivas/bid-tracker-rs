@@ -1,0 +1,25 @@
+[package]
+name = "bid_tracker_rs"
+version = "0.1.0"
+authors = ["Ankur Srivastava <ankur.srivastava@email.de>"]
+description = "Write some description for your project here."
+documentation = "https://docs.rs/bid-tracker-rs"
+homepage = "https://github.com/ansrivas/bid-tracker-rs"
+repository = "https://github.com/ansrivas/bid-tracker-rs"
+readme = "README.md"
+keywords = ["some-awesome-keywords"]
+license = "mit"
+categories = ["category keywords"]
+edition="2018"
+
+[lib]
+name = "bid_tracker_rs"
+path = "src/lib.rs"
+
+[[bin]]
+name = "bid-tracker-rs"
+path = "src/main.rs"
+
+[dependencies]
+
+[dev-dependencies]

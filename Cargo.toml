@@ -12,14 +12,33 @@ license = "mit"
 categories = ["category keywords"]
 edition="2018"
 
-[lib]
-name = "bid_tracker_rs"
-path = "src/lib.rs"
-
 [[bin]]
 name = "bid-tracker-rs"
 path = "src/main.rs"
 
 [dependencies]
+uuid = { version = "0.8", features = ["serde", "v4"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+## Error Handling
+anyhow = "1.0.31"
+thiserror = "1.0.19"
+
+ctrlc = { version = "3.1", features = ["termination"] }
+
+## Logging
+env_logger = "*"
+pretty_env_logger="*"
+log = "0.4"
+
+## Actix web related stuff
+futures = "0.3.5"
+actix-web = "3.0.0-alpha.3"
+actix-rt = "1"
+
+## Configuration
+envy = "0.4.1"
+dotenv = "0.15.0"
 
 [dev-dependencies]

@@ -1,7 +1,7 @@
-bid-tracker:
+bid-tracker-rs
 ---
 
-A simple project to implement bid-tracker interface and concrete implementation with the following functionality:
+This project implements a bid-tracker trait and concrete implementation with the following functionality:
 
 - record a user’s bid on an item;
 - get the current winning bid for an item;
@@ -11,7 +11,7 @@ A simple project to implement bid-tracker interface and concrete implementation 
 - No persistent store(events are for reporting only). 
 
 #### Why does it exist?
-Shows some advanced features of using custom error-handling, mutexed data-being shared among handlers, configuration loading, health-checks etc. in an application.
+Shows some advanced features of using custom error-handling, mutexed data-being shared among handlers, configuration loading, health-checks etc. in a rust actix-application.
 
 #### Run using docker
 ```bash

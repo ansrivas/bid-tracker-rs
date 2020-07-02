@@ -1,6 +1,9 @@
 bid-tracker-rs
 ---
 
+[![codecov](https://codecov.io/gh/ansrivas/bid-tracker-rs/branch/master/graph/badge.svg)](https://codecov.io/gh/ansrivas/bid-tracker-rs)
+![Linux](https://github.com/ansrivas/bid-tracker-rs/workflows/Linux/badge.svg)
+
 This project implements a bid-tracker trait and concrete implementation with the following functionality:
 
 - record a user’s bid on an item;

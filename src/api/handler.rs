@@ -19,29 +19,20 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+// use super::response::for_actix;
 use super::response::send_json;
-use crate::{
-	bidtracker::{Bid, BidManagement, BidTracker},
-	errors::BidTrackerError,
-};
+use crate::bidtracker::{Bid, BidManagement, BidTracker};
 use std::sync::Mutex;
 
-use actix_web::{error, http::StatusCode, web, Error as ActixErr, HttpResponse};
+use actix_web::{http::StatusCode, web, Error as ActixErr, HttpResponse};
 
 pub async fn post_bid_new(
 	bid: web::Json<Bid>,
 	bidtracker: web::Data<Mutex<BidManagement>>,
 ) -> Result<HttpResponse, ActixErr> {
 	let mut bdm = bidtracker.lock().unwrap();
-
 	let bbid = bid.into_inner();
-	bdm.insert_bid(&bbid).map_err(|source| match source {
-		BidTrackerError::ItemNotBiddable(_e) => {
-			error::ErrorUnprocessableEntity(format!("Failed to insert bid into the db. {:?}", _e))
-		}
-		_ => error::ErrorInternalServerError(format!("Failed to insert bid into the db. {:?}", source.to_string())),
-	})?;
-
+	bdm.insert_bid(&bbid)?;
 	send_json(StatusCode::OK, "Returning from post_bid_new bids", &bbid)
 }
 
@@ -51,13 +42,7 @@ pub async fn get_bids(
 	bidtracker: web::Data<Mutex<BidManagement>>,
 ) -> Result<HttpResponse, ActixErr> {
 	let bdm = bidtracker.lock().unwrap();
-	let bids = bdm.get_bids(&item_uuid).map_err(|source| match source {
-		BidTrackerError::ItemNotBiddable(_e) => {
-			error::ErrorUnprocessableEntity(format!("Failed to get the bids. {:?}", _e))
-		}
-		_ => error::ErrorInternalServerError(format!("Failed to get the bids. {:?}", source.to_string())),
-	})?;
-
+	let bids = bdm.get_bids(&item_uuid)?;
 	send_json(StatusCode::OK, "Returning from get_handler bids", &bids)
 }
 
@@ -67,16 +52,7 @@ pub async fn get_current_winning_bid(
 	bidtracker: web::Data<Mutex<BidManagement>>,
 ) -> Result<HttpResponse, ActixErr> {
 	let bdm = bidtracker.lock().unwrap();
-	let bids = bdm.current_winning_bid(&item_uuid).map_err(|source| match source {
-		BidTrackerError::ItemNotBiddable(_e) => {
-			error::ErrorUnprocessableEntity(format!("Failed to get current winning bids for. {:?}", _e))
-		}
-		_ => error::ErrorInternalServerError(format!(
-			"Failed to get current winning bids for. {:?}",
-			source.to_string()
-		)),
-	})?;
-
+	let bids = bdm.current_winning_bid(&item_uuid)?;
 	send_json(StatusCode::OK, "Returning from get_current_winning_bid", &bids)
 }
 
@@ -86,12 +62,7 @@ pub async fn get_user_bids(
 	bidtracker: web::Data<Mutex<BidManagement>>,
 ) -> Result<HttpResponse, ActixErr> {
 	let bdm = bidtracker.lock().unwrap();
-	let bids = bdm.get_bids_by_user(&user_uuid).map_err(|source| match source {
-		BidTrackerError::ItemNotBiddable(_e) => {
-			error::ErrorUnprocessableEntity(format!("Failed to get current winning bids {:?}", _e))
-		}
-		_ => error::ErrorInternalServerError(format!("Failed to get current winning bids {:?}", source.to_string())),
-	})?;
+	let bids = bdm.get_bids_by_user(&user_uuid)?;
 	send_json(StatusCode::OK, "Returning from get_user_bids", &bids)
 }
 

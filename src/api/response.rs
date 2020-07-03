@@ -22,6 +22,7 @@
 
 use crate::bidtracker::Bid;
 use actix_web::{http::StatusCode, web, Error as ActixErr, HttpResponse};
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

@@ -28,4 +28,17 @@ pub enum BidTrackerError {
 	ItemNotBiddable(String),
 	#[error("IO error encountered")]
 	Io { source: std::io::Error },
+	#[error("IO error encountered")]
+	Actix { source: actix_web::error::Error },
+}
+
+impl From<BidTrackerError> for actix_web::error::Error {
+	fn from(e: BidTrackerError) -> actix_web::error::Error {
+		match e {
+			BidTrackerError::ItemNotBiddable(_e) => {
+				actix_web::error::ErrorUnprocessableEntity(format!("Failed to process the bid the db. {:?}", _e))
+			}
+			_ => actix_web::error::ErrorInternalServerError(format!("Failed to get the bids. {:?}", e.to_string())),
+		}
+	}
 }

@@ -18,12 +18,12 @@ path = "src/main.rs"
 
 [dependencies]
 uuid = { version = "0.8.1", features = ["serde", "v4"] }
-serde = { version = "1.0.114", features = ["derive"] }
-serde_json = "1.0.56"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
 
 ## Error Handling
-anyhow = "1.0.31"
-thiserror = "1.0.20"
+anyhow = "1.0"
+thiserror = "1.0"
 
 ctrlc = { version = "3.1.5", features = ["termination"] }
 
@@ -33,8 +33,8 @@ pretty_env_logger= "0.4.0"
 log = "0.4.8"
 
 ## Actix web related stuff
-futures = "0.3.5"
-actix-web = "3.0.1"
+futures = "0.3.7"
+actix-web = "3.3.2"
 actix-rt = "1.1.1"
 
 ## Configuration

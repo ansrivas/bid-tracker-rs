@@ -35,7 +35,7 @@ log = "0.4.8"
 ## Actix web related stuff
 futures = "0.3.7"
 actix-web = "3.3.2"
-actix-rt = "1.1.1"
+actix-rt = "2.0.0"
 
 ## Configuration
 envy = "0.4.1"

@@ -20,6 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+use std::borrow::Borrow;
+
 use crate::bidtracker::Bid;
 use actix_web::{http::StatusCode, web, Error as ActixErr, HttpResponse};
 
@@ -53,7 +55,7 @@ where
 	let json = ResponseMessage {
 		code: status_code.as_u16(),
 		message: message.into(),
-		data,
+		data: data,
 	};
-	Ok(web::HttpResponse::build(StatusCode::from_u16(status_code.as_u16()).unwrap()).json(json))
+	Ok(web::HttpResponse::build(StatusCode::from_u16(status_code.as_u16()).unwrap()).json(json.borrow()))
 }

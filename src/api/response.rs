@@ -23,7 +23,7 @@
 use std::borrow::Borrow;
 
 use crate::bidtracker::Bid;
-use actix_web::{http::StatusCode, web, Error as ActixErr, HttpResponse};
+use actix_web::{http::StatusCode, Error as ActixErr, HttpResponse};
 
 use serde::{Deserialize, Serialize};
 
@@ -55,7 +55,7 @@ where
 	let json = ResponseMessage {
 		code: status_code.as_u16(),
 		message: message.into(),
-		data: data,
+		data,
 	};
-	Ok(web::HttpResponse::build(StatusCode::from_u16(status_code.as_u16()).unwrap()).json(json.borrow()))
+	Ok(HttpResponse::build(StatusCode::from_u16(status_code.as_u16()).unwrap()).json(json.borrow()))
 }

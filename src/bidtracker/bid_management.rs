@@ -121,9 +121,9 @@ impl BidTracker for BidManagement {
 		if let Some(user_bids) = self.user_bids.get(user_uuid) {
 			Ok(user_bids.clone())
 		} else {
-			return Err(BidTrackerError::ItemNotBiddable(
+			Err(BidTrackerError::ItemNotBiddable(
 				"Requested user_uuid is not available for bidding".into(),
-			));
+			))
 		}
 	}
 }

@@ -25,7 +25,6 @@ use crate::bidtracker::{Bid, BidManagement, BidTracker};
 use std::sync::Mutex;
 
 use actix_web::{http::StatusCode, web, Error as ActixErr, HttpResponse};
-
 pub async fn post_bid_new(
 	bid: web::Json<Bid>,
 	bidtracker: web::Data<Mutex<BidManagement>>,
@@ -73,6 +72,7 @@ mod tests {
 		api::{ResponseMessageBid, ResponseMessageBids},
 		bidtracker,
 	};
+	use actix_web::{dev::Service, test::TestRequest};
 	use actix_web::{http, test, App};
 
 	#[actix_rt::test]
@@ -91,21 +91,24 @@ mod tests {
 			amount: 30f64,
 		};
 
-		let srv = test::start(move || {
-			let biddable_items = vec![
-				uuid::Uuid::parse_str("b2f9ee6d-79fe-4b14-9c19-35a69a89219a").unwrap(),
-				uuid::Uuid::parse_str("b16ab43e-aa13-4079-b8c5-592e81312c01").unwrap(),
-			];
-			let bidmanagement = web::Data::new(Mutex::new(bidtracker::BidManagement::new(biddable_items)));
+		let biddable_items = vec![
+			uuid::Uuid::parse_str("b2f9ee6d-79fe-4b14-9c19-35a69a89219a").unwrap(),
+			uuid::Uuid::parse_str("b16ab43e-aa13-4079-b8c5-592e81312c01").unwrap(),
+		];
+		let bidmanagement = web::Data::new(Mutex::new(bidtracker::BidManagement::new(biddable_items)));
+		let srv = test::init_service(
 			App::new()
 				.app_data(bidmanagement)
-				.route("/", web::post().to(post_bid_new))
-		});
+				.route("/", web::post().to(post_bid_new)),
+		)
+		.await;
 
-		let response = srv.post("/").send_json(&non_existant_bid).await.unwrap();
+		let req = TestRequest::post().uri("/").set_json(&non_existant_bid).to_request();
+		let response = srv.call(req).await.unwrap();
 		assert_eq!(response.status(), http::StatusCode::UNPROCESSABLE_ENTITY);
 
-		let response = srv.post("/").send_json(&bid).await.unwrap();
+		let req = TestRequest::post().uri("/").set_json(&bid).to_request();
+		let response = srv.call(req).await.unwrap();
 		assert_eq!(response.status(), http::StatusCode::OK);
 	}
 
@@ -125,28 +128,39 @@ mod tests {
 			amount: 30f64,
 		};
 
+		let biddable_items = vec![
+			uuid::Uuid::parse_str("b2f9ee6d-79fe-4b14-9c19-35a69a89219a").unwrap(),
+			uuid::Uuid::parse_str("b16ab43e-aa13-4079-b8c5-592e81312c01").unwrap(),
+		];
+		let bidmanagement = web::Data::new(Mutex::new(bidtracker::BidManagement::new(biddable_items)));
 		// let srv = test::start(move || {
-		let srv = test::start(move || {
-			let biddable_items = vec![
-				uuid::Uuid::parse_str("b2f9ee6d-79fe-4b14-9c19-35a69a89219a").unwrap(),
-				uuid::Uuid::parse_str("b16ab43e-aa13-4079-b8c5-592e81312c01").unwrap(),
-			];
-			let bidmanagement = web::Data::new(Mutex::new(bidtracker::BidManagement::new(biddable_items)));
+		let srv = test::init_service(
 			App::new()
 				.app_data(bidmanagement)
 				.route("/", web::post().to(post_bid_new))
-				.route("/{itemuuid}", web::get().to(get_bids))
-		});
+				.route("/{itemuuid}", web::get().to(get_bids)),
+		)
+		.await;
 
-		let _response = srv.post("/").send_json(&bid1).await.unwrap();
-		let _response = srv.post("/").send_json(&bid2).await.unwrap();
+		let req1 = TestRequest::post().uri("/").set_json(&bid1).to_request();
+		let req2 = TestRequest::post().uri("/").set_json(&bid2).to_request();
+		srv.call(req1).await.unwrap();
+		srv.call(req2).await.unwrap();
 
-		let mut response = srv.get("/b2f9ee6d-79fe-4b14-9c19-35a69a89219a").send().await.unwrap();
-		let res: ResponseMessageBids = response.json().await.unwrap();
-		assert_eq!(res.data.len(), 2);
+		let req3 = TestRequest::get()
+			.uri("/b2f9ee6d-79fe-4b14-9c19-35a69a89219a")
+			.set_json(&bid2)
+			.to_request();
+
+		let response = srv.call(req3).await.unwrap();
+		let result: ResponseMessageBids = test::read_body_json(response).await;
+		assert_eq!(result.data.len(), 2);
 
 		// Missing uuid case
-		let response = srv.get("/d60da647-9b9b-43db-97af-56760afa6d93").send().await.unwrap();
+		let req = TestRequest::get()
+			.uri("/d60da647-9b9b-43db-97af-56760afa6d93")
+			.to_request();
+		let response = srv.call(req).await.unwrap();
 		assert_eq!(response.status(), http::StatusCode::UNPROCESSABLE_ENTITY);
 	}
 
@@ -166,36 +180,36 @@ mod tests {
 			amount: 32.5f64,
 		};
 
-		// let srv = test::start(move || {
-		let srv = test::start(move || {
-			let biddable_items = vec![
-				uuid::Uuid::parse_str("b2f9ee6d-79fe-4b14-9c19-35a69a89219a").unwrap(),
-				uuid::Uuid::parse_str("b16ab43e-aa13-4079-b8c5-592e81312c01").unwrap(),
-			];
-			let bidmanagement = web::Data::new(Mutex::new(bidtracker::BidManagement::new(biddable_items)));
+		let biddable_items = vec![
+			uuid::Uuid::parse_str("b2f9ee6d-79fe-4b14-9c19-35a69a89219a").unwrap(),
+			uuid::Uuid::parse_str("b16ab43e-aa13-4079-b8c5-592e81312c01").unwrap(),
+		];
+		let bidmanagement = web::Data::new(Mutex::new(bidtracker::BidManagement::new(biddable_items)));
+		let srv = test::init_service(
 			App::new()
 				.app_data(bidmanagement)
 				.route("/", web::post().to(post_bid_new))
-				.route("/{itemuuid}/winning", web::get().to(get_current_winning_bid))
-		});
+				.route("/{itemuuid}/winning", web::get().to(get_current_winning_bid)),
+		)
+		.await;
 
-		let _response = srv.post("/").send_json(&bid1).await.unwrap();
-		let _response = srv.post("/").send_json(&bid2).await.unwrap();
+		let req1 = TestRequest::post().uri("/").set_json(&bid1).to_request();
+		let req2 = TestRequest::post().uri("/").set_json(&bid2).to_request();
+		let _response = srv.call(req1).await.unwrap();
+		let _response = srv.call(req2).await.unwrap();
 
-		let mut response = srv
-			.get("/b2f9ee6d-79fe-4b14-9c19-35a69a89219a/winning")
-			.send()
-			.await
-			.unwrap();
-		let res: ResponseMessageBid = response.json().await.unwrap();
+		let req = TestRequest::get()
+			.uri("/b2f9ee6d-79fe-4b14-9c19-35a69a89219a/winning")
+			.to_request();
+		let response = srv.call(req).await.unwrap();
+		let res: ResponseMessageBid = test::read_body_json(response).await;
 		assert_eq!(res.data.amount, 32.5);
 
 		// Missing uuid case
-		let response = srv
-			.get("/d60da647-9b9b-43db-97af-56760afa6d93/winning")
-			.send()
-			.await
-			.unwrap();
+		let req = TestRequest::get()
+			.uri("/d60da647-9b9b-43db-97af-56760afa6d93/winning")
+			.to_request();
+		let response = srv.call(req).await.unwrap();
 		assert_eq!(response.status(), http::StatusCode::UNPROCESSABLE_ENTITY);
 	}
 
@@ -215,36 +229,36 @@ mod tests {
 			amount: 32.5f64,
 		};
 
-		// let srv = test::start(move || {
-		let srv = test::start(move || {
-			let biddable_items = vec![
-				uuid::Uuid::parse_str("b2f9ee6d-79fe-4b14-9c19-35a69a89219a").unwrap(),
-				uuid::Uuid::parse_str("b16ab43e-aa13-4079-b8c5-592e81312c01").unwrap(),
-			];
-			let bidmanagement = web::Data::new(Mutex::new(bidtracker::BidManagement::new(biddable_items)));
+		let biddable_items = vec![
+			uuid::Uuid::parse_str("b2f9ee6d-79fe-4b14-9c19-35a69a89219a").unwrap(),
+			uuid::Uuid::parse_str("b16ab43e-aa13-4079-b8c5-592e81312c01").unwrap(),
+		];
+		let bidmanagement = web::Data::new(Mutex::new(bidtracker::BidManagement::new(biddable_items)));
+		let srv = test::init_service(
 			App::new()
 				.app_data(bidmanagement)
 				.route("/", web::post().to(post_bid_new))
-				.route("/{useruuid}/bids", web::get().to(get_user_bids))
-		});
+				.route("/{useruuid}/bids", web::get().to(get_user_bids)),
+		)
+		.await;
 
-		let _response = srv.post("/").send_json(&bid1).await.unwrap();
-		let _response = srv.post("/").send_json(&bid2).await.unwrap();
+		let req1 = TestRequest::post().uri("/").set_json(&bid1).to_request();
+		let req2 = TestRequest::post().uri("/").set_json(&bid2).to_request();
+		let _response = srv.call(req1).await.unwrap();
+		let _response = srv.call(req2).await.unwrap();
 
-		let mut response = srv
-			.get("/1c916ab6-255b-4a36-9574-e456e0f774c9/bids")
-			.send()
-			.await
-			.unwrap();
-		let res: ResponseMessageBids = response.json().await.unwrap();
-		assert_eq!(res.data.len(), 2);
+		let req = TestRequest::get()
+			.uri("/1c916ab6-255b-4a36-9574-e456e0f774c9/bids")
+			.to_request();
+		let response = srv.call(req).await.unwrap();
+		let result: ResponseMessageBids = test::read_body_json(response).await;
+		assert_eq!(result.data.len(), 2);
 
 		// Missing uuid case
-		let response = srv
-			.get("/17ec66e3-4971-4912-824e-f8533a285857/bids")
-			.send()
-			.await
-			.unwrap();
+		let req = TestRequest::get()
+			.uri("/17ec66e3-4971-4912-824e-f8533a285857/bids")
+			.to_request();
+		let response = srv.call(req).await.unwrap();
 		assert_eq!(response.status(), http::StatusCode::UNPROCESSABLE_ENTITY);
 	}
 }

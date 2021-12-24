@@ -10,7 +10,7 @@ readme = "README.md"
 keywords = ["some-awesome-keywords"]
 license = "mit"
 categories = ["category keywords"]
-edition="2018"
+edition = "2018"
 
 [[bin]]
 name = "bid-tracker-rs"
@@ -28,13 +28,12 @@ thiserror = "1.0"
 ctrlc = { version = "3.1", features = ["termination"] }
 
 ## Logging
-env_logger = "0.9"
-pretty_env_logger= "0.4.0"
-log = "0.4"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
 
 ## Actix web related stuff
-futures = "0.3.7"
-actix-web = "4.0.0-beta.6"
+actix-web = "4.0.0-beta.15"
 actix-rt = "2"
 
 ## Configuration

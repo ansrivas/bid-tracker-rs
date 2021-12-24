@@ -25,7 +25,7 @@ use super::ResponseMessage;
 
 // Custom error handler in case there is an uuid parse error
 pub fn uuid_error_handler(err: error::PathError, _req: &HttpRequest) -> error::Error {
-	log::debug!("Failed to parse incoming path component");
+	tracing::debug!("Failed to parse incoming path component");
 
 	let detail = err.to_string();
 	let rm = ResponseMessage {
@@ -34,13 +34,13 @@ pub fn uuid_error_handler(err: error::PathError, _req: &HttpRequest) -> error::E
 		data: "",
 	};
 	let resp = HttpResponse::build(StatusCode::BAD_REQUEST).json(&rm);
-	error::InternalError::from_response(err, resp.into()).into()
+	error::InternalError::from_response(err, resp).into()
 }
 
 // Custom error handler in case there is json payload decoding error
 pub fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> error::Error {
 	use actix_web::error::JsonPayloadError;
-	log::debug!("Failed to parse incoming json component");
+	tracing::debug!("Failed to parse incoming json component");
 
 	let detail = err.to_string();
 	let resp = match &err {
@@ -57,5 +57,5 @@ pub fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> e
 		}
 		_ => HttpResponse::BadRequest().body(detail),
 	};
-	error::InternalError::from_response(err, resp.into()).into()
+	error::InternalError::from_response(err, resp).into()
 }

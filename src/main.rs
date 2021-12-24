@@ -25,14 +25,14 @@ mod bidtracker;
 mod config;
 mod errors;
 
-use actix_web::{middleware, web, App, FromRequest, HttpServer};
+use actix_web::{middleware, web, App, HttpServer};
 use api::custom_error_handler;
 
 use anyhow::{self, Context};
-use bidtracker::{Bid, BidTracker};
+use bidtracker::BidTracker;
 use config::Config;
-
 use std::{env, sync::Mutex};
+use tracing_subscriber::{self, EnvFilter};
 
 async fn spawn_server(
 	config: &Config,
@@ -41,12 +41,8 @@ async fn spawn_server(
 	HttpServer::new(move || {
 		App::new()
 			.app_data(bidtracker.clone())
-			.app_data(web::Path::<uuid::Uuid>::configure(|cfg| {
-				cfg.error_handler(custom_error_handler::uuid_error_handler)
-			}))
-			.app_data(web::Json::<Bid>::configure(|cfg| {
-				cfg.error_handler(custom_error_handler::json_error_handler)
-			}))
+			.app_data(web::PathConfig::default().error_handler(custom_error_handler::uuid_error_handler))
+			.app_data(web::JsonConfig::default().error_handler(custom_error_handler::json_error_handler))
 			.wrap(middleware::Logger::default())
 			.wrap(middleware::Compress::default())
 			.service(web::resource("/healthz").route(web::get().to(|| async { "Healthy bruh" })))
@@ -77,7 +73,9 @@ async fn main() -> anyhow::Result<()> {
 	if env::var_os("RUST_LOG").is_none() {
 		env::set_var("RUST_LOG", "bid_tracker_rs=info");
 	}
-	pretty_env_logger::init();
+	tracing_subscriber::fmt()
+		.with_env_filter(EnvFilter::from_default_env())
+		.init();
 
 	let config = Config::new();
 
@@ -86,7 +84,7 @@ async fn main() -> anyhow::Result<()> {
 		uuid::Uuid::parse_str("b16ab43e-aa13-4079-b8c5-592e81312c01").unwrap(),
 	];
 	let bidmanagement = web::Data::new(Mutex::new(bidtracker::BidManagement::new(biddable_items)));
-	log::info!("Spawning server on {}", &config.address);
+	tracing::info!("Spawning server on {}", &config.address);
 	spawn_server(&config, bidmanagement)
 		.await
 		.context(format!("Failed to launch the server on {}", &config.address))?;

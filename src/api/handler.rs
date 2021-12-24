@@ -84,7 +84,7 @@ mod tests {
 			amount: 30f64,
 		};
 
-		let non_existant_bid = Bid {
+		let non_existent_bid = Bid {
 			item_uuid: uuid::Uuid::parse_str("7f272d43-0ff2-4e0f-9ebc-589eae48e3ad").unwrap(),
 			user_uuid: uuid::Uuid::parse_str("b16ab43e-aa13-4079-b8c5-592e81312c01").unwrap(),
 			timestamp: 12312321321,
@@ -103,7 +103,7 @@ mod tests {
 		)
 		.await;
 
-		let req = TestRequest::post().uri("/").set_json(&non_existant_bid).to_request();
+		let req = TestRequest::post().uri("/").set_json(&non_existent_bid).to_request();
 		let response = srv.call(req).await.unwrap();
 		assert_eq!(response.status(), http::StatusCode::UNPROCESSABLE_ENTITY);
 

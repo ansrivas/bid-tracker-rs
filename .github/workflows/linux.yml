@@ -12,8 +12,6 @@ jobs:
       fail-fast: false
       matrix:
         version:
-          - 1.45.0 # MSRV
-          - 1.46.0
           - stable
           - nightly
 
@@ -22,7 +20,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
-
+      - uses: Swatinem/rust-cache@v1
       - name: Install ${{ matrix.version }}
         uses: actions-rs/toolchain@v1
         with:
@@ -34,18 +32,6 @@ jobs:
         uses: actions-rs/cargo@v1
         with:
           command: generate-lockfile
-
-      - name: Cache cargo registry
-        uses: actions/cache@v1
-        with:
-          path: ~/.cargo/registry
-          key: ${{ matrix.version }}-x86_64-unknown-linux-gnu-cargo-registry-trimmed-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Cache cargo index
-        uses: actions/cache@v1
-        with:
-          path: ~/.cargo/git
-          key: ${{ matrix.version }}-x86_64-unknown-linux-gnu-cargo-index-trimmed-${{ hashFiles('**/Cargo.lock') }}
 
       - name: Cache cargo build
         uses: actions/cache@v1
@@ -86,12 +72,3 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: cobertura.xml
-
-      - name: Install cargo-cache
-        continue-on-error: true
-        run: |
-          cargo install cargo-cache --no-default-features --features ci-autoclean
-
-      - name: Clear the cargo caches
-        run: |
-          cargo-cache

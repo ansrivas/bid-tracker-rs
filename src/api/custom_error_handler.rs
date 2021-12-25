@@ -59,3 +59,36 @@ pub fn json_error_handler(err: error::JsonPayloadError, _req: &HttpRequest) -> e
 	};
 	error::InternalError::from_response(err, resp).into()
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use crate::api::handler::{get_bids, post_bid_new};
+	use actix_web::{dev::Service, test::TestRequest};
+	use actix_web::{http, test, web, App};
+
+	#[actix_rt::test]
+	async fn test_custom_error_handler() {
+		let srv = test::init_service(
+			App::new()
+				// .app_data(bidmanagement)
+				.app_data(web::PathConfig::default().error_handler(uuid_error_handler))
+				.app_data(web::JsonConfig::default().error_handler(json_error_handler))
+				.route("/", web::post().to(post_bid_new))
+				.route("/{itemuuid}", web::get().to(get_bids)),
+		)
+		.await;
+
+		let malformed_json = serde_json::json!({
+			"something": "random"
+		});
+		let req = TestRequest::post().uri("/").set_json(&malformed_json).to_request();
+		let response = srv.call(req).await.unwrap();
+		assert_eq!(response.status(), http::StatusCode::UNPROCESSABLE_ENTITY);
+
+		let malformed_uuid = "malformed_uuid";
+		let req = TestRequest::get().uri(&format!("/{}", malformed_uuid)).to_request();
+		let response = srv.call(req).await.unwrap();
+		assert_eq!(response.status(), http::StatusCode::BAD_REQUEST);
+	}
+}

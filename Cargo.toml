@@ -33,7 +33,7 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 
 ## Actix web related stuff
-actix-web = "4.0.0-beta.15"
+actix-web = "4.0.0-beta.18"
 actix-rt = "2"
 
 ## Configuration

@@ -1,4 +1,4 @@
-FROM rust:1.43-buster as builder
+FROM rust:1.57-buster as builder
 
 RUN apt update -y  && \
     apt install cmake libclang1 clang -y 
@@ -9,6 +9,6 @@ WORKDIR /opt/src
 
 RUN cargo build --release
 
-FROM debian:buster-slim
+FROM gcr.io/distroless/cc
 COPY --from=builder /opt/src/target/release/bid-tracker-rs /usr/local/bin/app
 CMD ["app"]

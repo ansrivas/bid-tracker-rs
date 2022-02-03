@@ -25,6 +25,7 @@ use crate::bidtracker::{Bid, BidManagement, BidTracker};
 use std::sync::Mutex;
 
 use actix_web::{http::StatusCode, web, Error as ActixErr, HttpResponse};
+
 pub async fn post_bid_new(
 	bid: web::Json<Bid>,
 	bidtracker: web::Data<Mutex<BidManagement>>,

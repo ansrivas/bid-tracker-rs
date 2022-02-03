@@ -21,6 +21,7 @@ uuid = { version = "0.8", features = ["serde", "v4"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
+tokio = { version = "1", features = ["full"] }
 ## Error Handling
 anyhow = "1.0"
 thiserror = "1.0"
@@ -34,10 +35,10 @@ tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 
 ## Actix web related stuff
 actix-web = "4.0.0-rc.2"
-actix-rt = "2"
 
 ## Configuration
 envy = "0.4"
 dotenv = "0.15"
 
 [dev-dependencies]
+actix-rt = "2"

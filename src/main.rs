@@ -62,7 +62,7 @@ async fn spawn_server(
 	.await
 }
 
-#[actix_rt::main]
+#[tokio::main]
 async fn main() -> anyhow::Result<()> {
 	ctrlc::set_handler(move || {
 		use std::process::exit;
